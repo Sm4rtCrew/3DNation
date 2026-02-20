@@ -9,11 +9,11 @@ import {
 import { Button } from "@/components/ui/button";
 
 const NAV_ITEMS = [
-  { path: "/finance", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { path: "/finance/transactions", label: "Transacciones", icon: ArrowLeftRight },
-  { path: "/finance/funds", label: "Fondos", icon: Wallet },
-  { path: "/finance/cards", label: "Tarjetas", icon: CreditCard },
-  { path: "/finance/categories", label: "Categorías", icon: Tag },
+  { path: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { path: "/transactions", label: "Transacciones", icon: ArrowLeftRight },
+  { path: "/funds", label: "Fondos", icon: Wallet },
+  { path: "/cards", label: "Tarjetas", icon: CreditCard },
+  { path: "/categories", label: "Categorías", icon: Tag },
 ];
 
 interface Props { children: React.ReactNode }
@@ -26,7 +26,7 @@ export default function FinanceLayout({ children }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [bizDropOpen, setBizDropOpen] = useState(false);
 
-  const handleLogout = () => { logout(); navigate("/finance/login"); };
+  const handleLogout = () => { logout(); navigate("/login"); };
 
   const isActive = (item: (typeof NAV_ITEMS)[0]) =>
     item.exact ? location.pathname === item.path : location.pathname.startsWith(item.path);

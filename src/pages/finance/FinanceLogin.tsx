@@ -27,7 +27,7 @@ export default function FinanceLogin() {
     try {
       if (mode === "login") {
         await login(email, password);
-        navigate("/finance");
+        navigate("/");
       } else {
         if (password.length < 8) { setError("La contraseña debe tener mínimo 8 caracteres."); return; }
         await register(email, password, fullName);

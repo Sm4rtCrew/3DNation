@@ -19,7 +19,12 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 function FinanceGuard({ children }: { children: React.ReactNode }) {
-  const { token } = useFinanceAuth();
+  const { token, loading } = useFinanceAuth();
+  if (loading) return (
+    <div className="min-h-screen bg-finance-gradient flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+    </div>
+  );
   if (!token) return <Navigate to="/login" replace />;
   return <FinanceWSProvider>{children}</FinanceWSProvider>;
 }
@@ -32,16 +37,12 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* Public */}
             <Route path="/login" element={<FinanceLogin />} />
-
-            {/* Protected finance routes */}
             <Route path="/" element={<FinanceGuard><FinanceLayout><FinanceDashboard /></FinanceLayout></FinanceGuard>} />
             <Route path="/transactions" element={<FinanceGuard><FinanceLayout><FinanceTransactions /></FinanceLayout></FinanceGuard>} />
             <Route path="/funds" element={<FinanceGuard><FinanceLayout><FinanceFunds /></FinanceLayout></FinanceGuard>} />
             <Route path="/cards" element={<FinanceGuard><FinanceLayout><FinanceCards /></FinanceLayout></FinanceGuard>} />
             <Route path="/categories" element={<FinanceGuard><FinanceLayout><FinanceCategories /></FinanceLayout></FinanceGuard>} />
-
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

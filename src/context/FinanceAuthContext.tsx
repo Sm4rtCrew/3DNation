@@ -1,99 +1,133 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { api, TOKEN_KEY, BUSINESS_KEY, USER_KEY, setToken, setBusinessId, clearAuth } from "@/lib/api";
-import type { AuthUser, Business, LoginResponse } from "@/types/finance";
+import { supabase } from "@/integrations/supabase/client";
+import type { User } from "@supabase/supabase-js";
+import type { Business, Membership } from "@/types/finance";
+
+const BUSINESS_KEY = "finance_business_id";
 
 interface FinanceAuthContextType {
-  user: AuthUser | null;
-  businesses: Business[];
-  activeBusiness: Business | null;
+  user: User | null;
+  profile: { full_name: string; email: string } | null;
+  businesses: (Business & { role: string })[];
+  activeBusiness: (Business & { role: string }) | null;
   token: string | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, fullName: string) => Promise<void>;
   logout: () => void;
-  selectBusiness: (b: Business) => void;
+  selectBusiness: (b: Business & { role: string }) => void;
   refreshBusinesses: () => Promise<void>;
 }
 
 const FinanceAuthContext = createContext<FinanceAuthContextType | undefined>(undefined);
 
 export function FinanceAuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(() => {
-    try { return JSON.parse(localStorage.getItem(USER_KEY) || "null"); }
-    catch { return null; }
-  });
-  const [token, setTokenState] = useState<string | null>(() => localStorage.getItem(TOKEN_KEY));
-  const [businesses, setBusinesses] = useState<Business[]>([]);
-  const [activeBusiness, setActiveBusiness] = useState<Business | null>(() => {
-    const id = localStorage.getItem(BUSINESS_KEY);
-    return id ? { id: Number(id) } as Business : null;
-  });
-  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<{ full_name: string; email: string } | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [businesses, setBusinesses] = useState<(Business & { role: string })[]>([]);
+  const [activeBusiness, setActiveBusiness] = useState<(Business & { role: string }) | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const refreshBusinesses = useCallback(async () => {
-    try {
-      const data = await api.get<Business[]>("/businesses/me");
-      setBusinesses(data);
-      // If no active business set, pick first
-      if (!localStorage.getItem(BUSINESS_KEY) && data.length > 0) {
-        setActiveBusiness(data[0]);
-        setBusinessId(data[0].id);
-      } else if (data.length > 0) {
-        const currentId = localStorage.getItem(BUSINESS_KEY);
-        const found = data.find((b) => String(b.id) === currentId);
-        if (found) setActiveBusiness(found);
-        else { setActiveBusiness(data[0]); setBusinessId(data[0].id); }
+    const { data: memberships } = await supabase
+      .from("memberships")
+      .select("*, businesses(*)");
+    
+    if (memberships && memberships.length > 0) {
+      const bizList = memberships.map((m: any) => ({
+        ...m.businesses,
+        role: m.role,
+      }));
+      setBusinesses(bizList);
+
+      const savedId = localStorage.getItem(BUSINESS_KEY);
+      const found = bizList.find((b: any) => b.id === savedId);
+      if (found) setActiveBusiness(found);
+      else {
+        setActiveBusiness(bizList[0]);
+        localStorage.setItem(BUSINESS_KEY, bizList[0].id);
       }
-    } catch {
-      /* ignore */
+    } else {
+      setBusinesses([]);
+      setActiveBusiness(null);
     }
   }, []);
 
+  const loadProfile = useCallback(async (userId: string) => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("full_name, email")
+      .eq("id", userId)
+      .single();
+    if (data) setProfile(data);
+  }, []);
+
   useEffect(() => {
-    if (token && user) {
-      refreshBusinesses();
-    }
-  }, [token, user, refreshBusinesses]);
+    // Set up auth listener BEFORE checking session
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+        setToken(session.access_token);
+        // Use setTimeout to avoid Supabase deadlock
+        setTimeout(() => {
+          loadProfile(session.user.id);
+          refreshBusinesses();
+        }, 0);
+      } else {
+        setUser(null);
+        setToken(null);
+        setProfile(null);
+        setBusinesses([]);
+        setActiveBusiness(null);
+      }
+      setLoading(false);
+    });
+
+    // Check existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser(session.user);
+        setToken(session.access_token);
+        loadProfile(session.user.id);
+        refreshBusinesses();
+      }
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [loadProfile, refreshBusinesses]);
 
   const login = async (email: string, password: string) => {
     setLoading(true);
-    try {
-      const res = await api.post<LoginResponse>("/auth/login", { email, password });
-      setToken(res.access_token);
-      setTokenState(res.access_token);
-      setUser(res.user);
-      localStorage.setItem(USER_KEY, JSON.stringify(res.user));
-      await refreshBusinesses();
-    } finally {
-      setLoading(false);
-    }
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) { setLoading(false); throw new Error(error.message); }
   };
 
   const register = async (email: string, password: string, fullName: string) => {
     setLoading(true);
-    try {
-      await api.post("/auth/register", { email, password, full_name: fullName });
-    } finally {
-      setLoading(false);
-    }
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: fullName } },
+    });
+    setLoading(false);
+    if (error) throw new Error(error.message);
   };
 
-  const logout = () => {
-    clearAuth();
-    setUser(null);
-    setTokenState(null);
-    setBusinesses([]);
-    setActiveBusiness(null);
+  const logout = async () => {
+    await supabase.auth.signOut();
+    localStorage.removeItem(BUSINESS_KEY);
   };
 
-  const selectBusiness = (b: Business) => {
+  const selectBusiness = (b: Business & { role: string }) => {
     setActiveBusiness(b);
-    setBusinessId(b.id);
+    localStorage.setItem(BUSINESS_KEY, b.id);
   };
 
   return (
     <FinanceAuthContext.Provider value={{
-      user, businesses, activeBusiness, token, loading,
+      user, profile, businesses, activeBusiness, token, loading,
       login, register, logout, selectBusiness, refreshBusinesses,
     }}>
       {children}

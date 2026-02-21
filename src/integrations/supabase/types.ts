@@ -14,6 +14,118 @@ export type Database = {
   }
   public: {
     Tables: {
+      balances: {
+        Row: {
+          balance: number
+          business_id: string
+          entity_id: string
+          entity_type: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          balance?: number
+          business_id: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          balance?: number
+          business_id?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "balances_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      budgets: {
+        Row: {
+          business_id: string
+          category_id: string | null
+          created_at: string
+          id: string
+          monthly_limit: number
+        }
+        Insert: {
+          business_id: string
+          category_id?: string | null
+          created_at?: string
+          id?: string
+          monthly_limit?: number
+        }
+        Update: {
+          business_id?: string
+          category_id?: string | null
+          created_at?: string
+          id?: string
+          monthly_limit?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budgets_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budgets_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "finance_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      businesses: {
+        Row: {
+          created_at: string
+          created_by: string
+          currency: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          currency?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "businesses_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       calendar_permissions: {
         Row: {
           calendar_id: string
@@ -100,6 +212,56 @@ export type Database = {
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cards: {
+        Row: {
+          allow_overlimit: boolean
+          available_credit: number
+          business_id: string
+          closing_day: number
+          created_at: string
+          credit_limit: number
+          due_day: number
+          id: string
+          name: string
+          overlimit_limit: number | null
+          updated_at: string
+        }
+        Insert: {
+          allow_overlimit?: boolean
+          available_credit?: number
+          business_id: string
+          closing_day: number
+          created_at?: string
+          credit_limit?: number
+          due_day: number
+          id?: string
+          name: string
+          overlimit_limit?: number | null
+          updated_at?: string
+        }
+        Update: {
+          allow_overlimit?: boolean
+          available_credit?: number
+          business_id?: string
+          closing_day?: number
+          created_at?: string
+          credit_limit?: number
+          due_day?: number
+          id?: string
+          name?: string
+          overlimit_limit?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cards_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
             referencedColumns: ["id"]
           },
         ]
@@ -410,6 +572,131 @@ export type Database = {
           },
         ]
       }
+      finance_categories: {
+        Row: {
+          business_id: string
+          color: string
+          created_at: string
+          icon: string | null
+          id: string
+          name: string
+          parent_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          color?: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name: string
+          parent_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          color?: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name?: string
+          parent_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finance_categories_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "finance_categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "finance_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      funds: {
+        Row: {
+          business_id: string
+          created_at: string
+          description: string | null
+          fund_type: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          description?: string | null
+          fund_type?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          description?: string | null
+          fund_type?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "funds_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      memberships: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memberships_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memberships_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -605,6 +892,99 @@ export type Database = {
           },
         ]
       }
+      transaction_legs: {
+        Row: {
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          signed_amount: number
+          transaction_id: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          signed_amount: number
+          transaction_id: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          signed_amount?: number
+          transaction_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaction_legs_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          amount: number
+          business_id: string
+          category_id: string | null
+          created_at: string
+          created_by: string
+          description: string
+          id: string
+          tx_date: string
+          tx_type: string
+        }
+        Insert: {
+          amount: number
+          business_id: string
+          category_id?: string | null
+          created_at?: string
+          created_by: string
+          description: string
+          id?: string
+          tx_date?: string
+          tx_type: string
+        }
+        Update: {
+          amount?: number
+          business_id?: string
+          category_id?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string
+          id?: string
+          tx_date?: string
+          tx_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "finance_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -618,6 +998,7 @@ export type Database = {
         Args: { check_event_id: string; check_user_id: string }
         Returns: boolean
       }
+      is_business_member: { Args: { biz_id: string }; Returns: boolean }
       is_calendar_owner_or_admin: {
         Args: { check_calendar_id: string; check_user_id: string }
         Returns: boolean

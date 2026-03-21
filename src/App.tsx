@@ -11,6 +11,7 @@ import Businesses from "@/pages/Businesses";
 import Settings from "@/pages/Settings";
 import PlaceholderPage from "@/pages/PlaceholderPage";
 import NotFound from "@/pages/NotFound";
+import InvoiceDemo from "@/pages/InvoiceDemo";
 
 const queryClient = new QueryClient();
 

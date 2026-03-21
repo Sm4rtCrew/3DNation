@@ -11,6 +11,7 @@ import Businesses from "@/pages/Businesses";
 import Settings from "@/pages/Settings";
 import PlaceholderPage from "@/pages/PlaceholderPage";
 import NotFound from "@/pages/NotFound";
+import InvoiceDemo from "@/pages/InvoiceDemo";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/businesses" element={<Businesses />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
+          <Route path="/invoice" element={<InvoiceDemo />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

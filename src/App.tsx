@@ -12,6 +12,7 @@ import Settings from "@/pages/Settings";
 import PlaceholderPage from "@/pages/PlaceholderPage";
 import NotFound from "@/pages/NotFound";
 import InvoiceDemo from "@/pages/InvoiceDemo";
+import InvoiceCreate from "@/pages/InvoiceCreate";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/settings" element={<Settings />} />
           </Route>
           <Route path="/invoice" element={<InvoiceDemo />} />
+          <Route path="/invoice/create" element={<InvoiceCreate />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

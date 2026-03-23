@@ -12,6 +12,7 @@ import Settings from "@/pages/Settings";
 import PlaceholderPage from "@/pages/PlaceholderPage";
 import NotFound from "@/pages/NotFound";
 import InvoiceDemo from "@/pages/InvoiceDemo";
+import InvoiceCreate from "@/pages/InvoiceCreate";
 
 const queryClient = new QueryClient();
 
